@@ -1,0 +1,55 @@
+<script>
+
+//keep the selected date while the datepicker is open
+var tempvalue = ''
+
+//bind the custom dates to datepicker
+$('#date').dateRangePicker({
+      // date range picker options
+    })
+    .bind('datepicker-open', function() {
+      // adjust position
+      var elem = $('#date');
+      $('.date-picker-wrapper').css({
+        position: 'absolute',
+        top: '' + (elem.offset().top - 245) + 'px',
+       left: '' + elem.offset().left + 'px'
+      });
+    })
+
+//bind the custom-to-dates to datepicker
+$('#toDate').dateRangePicker({
+      // date range picker options
+
+      autoClose: true,
+  singleDate : true,
+  showShortcuts: false,
+  singleMonth: true,
+
+    })
+    .bind('datepicker-open', function() {
+      if ($('#toDate').val() ){
+      tempvalue = $('#toDate').val() + " to Yesterday"
+      }
+      $('#toDate').data('dateRangePicker').clear()
+      // adjust position
+      var elem = $('#toDate');
+      $('.date-picker-wrapper').css({
+        position: 'absolute',
+        top: '' + (elem.offset().top - 245) + 'px',
+       left: '' + elem.offset().left + 'px'
+      });
+    })
+    .bind('datepicker-close',function()
+{
+  /* This event will be triggered after date range picker close animation */
+
+  var currentVal = $('#toDate').val()
+  if (currentVal != '') {
+  $('#toDate').val(currentVal+" to Yesterday")
+  } else {$('#toDate').val(tempvalue)}
+
+})
+
+
+</script>

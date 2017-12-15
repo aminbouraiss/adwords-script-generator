@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Adwords script generator</title>
+    
+    <!-- Import jQuery -->
+    <?!= include('cdn_jQuery'); ?>
+    <!-- Import bootsrap -->
+    <?!= include('cdn_bootstrap'); ?>
+
+    <!-- Custom CSS -->  
+    <?!= include('css_custom'); ?>
+    <!-- CSS for the select box and the date picker -->
+    <?!= include('css_controls'); ?>
+    <!-- CSS for the button spinner -->
+    <?!= include('css_spinner'); ?>
+  
+</head>
+<body>
+
+    <!-- Attach the event handlers and load the global variables -->
+    <?!= include('js_form_init'); ?>
+    <!--Make the datepicker compatible with safari -->
+    <?!= include('js_safari_fix'); ?>     
+
+    <nav class="sticky" style="top: 0px;">
+    </nav>
+    <form id="myForm" name="myForm">
+        <h1>Adwords script builder</h1>
+        <fieldset id="Spreadsheet-Fieldset">
+            <legend class="spreadsheet">
+            <span class="number">1</span>Select a format</legend>
+            <label for="Spreadsheet"></label>
+            <div class="Radio-container">
+            <div class="Radio-Div">
+            <label></label>
+            <input id="gSheetRadio" name="fileFormat" type="radio" checked="checked" value="Sheet">
+            <label class="light" for="gSheetRadio">Google Sheet</label>
+            </div>
+            <div class="Radio-Div" id="Left-Radio">
+            <input id="csvRadio" name="fileFormat" type="radio" value="csv">
+            <label class="light" for="csvRadio">Email report as CSV</label>
+            </div>
+            </div>
+            <div id="sheetDiv">
+            <input type="text" id="sheetUrl" name="sheetUrl" placeholder="Enter your Google Sheet URL">
+            </div>
+            <div id="hideCsv" style="display:none">
+                  <input type="email"  id="csvEmail" name="csvEmail" placeholder="Send to: Enter email adress">
+                  <input type="text"  id="csvName" name="csvName" placeholder="Enter a file name">
+            <div/>
+
+            
+        </fieldset>
+
+        <fieldset id="Account-Fieldset">
+            <legend class="testus">
+            <span class="number">2</span>Adwords account ID
+            </legend>
+            <label for="name"></label>
+            <input  type="text" id="AccountId" name="AccountId" placeholder="Enter an Adwords Account ID" >
+            <label for="name">Optional: <span style="font-weight:200;">Account filter</span></label>
+            <select id="filter-Results">
+            <option>Select a filter</option>
+            <option value="STARTS_WITH_IGNORE_CASE">Starts with</option>
+            <option value="STARTS_WITH">Starts with (case sensitive)</option>
+            <option value="CONTAINS_IGNORE_CASE">Contains</option>
+            <option value="CONTAINS">Contains (case sensitive)</option>
+            <option value="DOES_NOT_CONTAIN_IGNORE_CASE">Does not contain</option>
+            <option value="DOES_NOT_CONTAIN">Does not contain (case sensitive)</option>
+            <option value="CONTAINS_ANY">Contains any</option>
+            <option value="CONTAINS_NONE">Contains none</option>
+            <option value="CONTAINS_ALL">Contains All</option>
+            </select>
+            <input id="extraFilter" name="extraFilter" type="text" style="display:none" placeholder="Enter your keywords">
+            </fieldset>
+            <fieldset>
+            <legend id="Date-Legend">
+            <span class="number">3</span>Select a date range
+            </legend>
+
+
+            <!-- radio button test -->
+            <div class="Radio-container">
+            <div class="Radio-Div">
+            <label></label>
+            <input id="StandartDate" name="dateRadio" type="radio" value="DateRanges">
+            <label class="light" for="Date ranges">Dynamic range</label>
+            </div>
+            <div class="Radio-Div" id="Left-Radio">
+            <input id="CustomRangeRadio" name="dateRadio" type="radio" value="CustomRange">
+            <label class="light" for="CustomRangeRadio">Custom range</label>
+            </div>
+            </div>
+
+            <div id="hideDates" style="display:none">
+            <select style="width:100%;" id="dateRange" name="dateRange">
+                <option value=TODAY>Today</option>
+                <option value=YESTERDAY>Yesterday</option>
+                <option value=YEAR_TO_DATE>Year to date (Yesterday)</option>
+                <option value=CUSTOM_TO_DATE>Custom date to Yesterday</option>
+                <option value=LAST_7_DAYS>Last 7 days</option>
+                <option value=THIS_WEEK_SUN_TODAY>This week (Sunday-Today)</option>
+                <option value=THIS_WEEK_MON_TODAY>This week (Monday-Today)</option>
+                <option value=LAST_WEEK>Last week</option>
+                <option value=LAST_BUSINESS_WEEK>Last business week</option>
+                <option value=LAST_WEEK_SUN_SAT>Last week (Sunday-Saturday)</option>
+                <option value=LAST_14_DAYS>Last 14 days</option>
+                <option value=LAST_30_DAYS>Last 30 days</option>
+                <option value=THIS_MONTH>This month</option>
+            </select>
+            <div id="hideCustomToDates" style="display:none">
+            <input  id="toDate" name="toDate" type="text">
+            </div>
+            </div>
+            <div id="hideCustomDates" style="display:none">
+            <input  id="date" name="date">
+            </div>
+            
+        </fieldset>
+        
+        <fieldset>
+             <select class="required-entry" id="category" name="category" onchange="javascript: dynamicdropdown(this.options[this.selectedIndex].value);">
+                <option value="">
+                Select a report type
+                </option>
+                <option value="CAMPAIGN_PERFORMANCE_REPORT">
+                    Campaign
+                </option>
+                <option value="ACCOUNT_PERFORMANCE_REPORT">
+                    Account
+                </option>
+                <option value="ADGROUP_PERFORMANCE_REPORT">
+                    Adgroup
+                </option>
+                <option value="AD_PERFORMANCE_REPORT">
+                    Ad
+                </option>
+                <option value="AGE_RANGE_PERFORMANCE_REPORT">
+                    Age range
+                </option>
+                <option value="AUDIENCE_PERFORMANCE_REPORT">
+                    Audience
+                </option>
+                <option value="AUTOMATIC_PLACEMENTS_PERFORMANCE_REPORT">
+                    Automatic placements
+                </option>
+                <option value="BID_GOAL_PERFORMANCE_REPORT">
+                    Bid goal
+                </option>
+                <option value="BUDGET_PERFORMANCE_REPORT">
+                    Budget
+                </option>
+                <option value="CALL_METRICS_CALL_DETAILS_REPORT">
+                    Call metrics call details
+                </option>
+                <option value="CAMPAIGN_AD_SCHEDULE_TARGET_REPORT">
+                    Campaign ad schedule target
+                </option>
+                <option value="CAMPAIGN_LOCATION_TARGET_REPORT">
+                    Campaign location target
+                </option>
+                <option value="CAMPAIGN_NEGATIVE_KEYWORDS_PERFORMANCE_REPORT">
+                    Campaign negative keywords
+                </option>
+                <option value="CAMPAIGN_NEGATIVE_LOCATIONS_REPORT">
+                    Campaign negative locations
+                </option>
+                <option value="CAMPAIGN_NEGATIVE_PLACEMENTS_PERFORMANCE_REPORT">
+                    Campaign negative placements
+                </option>
+                <option value="CAMPAIGN_PLATFORM_TARGET_REPORT">
+                    Campaign platform target
+                </option>
+                <option value="CAMPAIGN_SHARED_SET_REPORT">
+                    Campaign share set
+                </option>
+                <option value="CLICK_PERFORMANCE_REPORT">
+                    Click performance
+                </option>
+                <option value="CREATIVE_CONVERSION_REPORT">
+                    Creative conversion
+                </option>
+                <option value="CRITERIA_PERFORMANCE_REPORT">
+                    Criteria performance
+                </option>
+                <option value="DESTINATION_URL_REPORT">
+                    Destination URL
+                </option>
+                <option value="DISPLAY_KEYWORD_PERFORMANCE_REPORT">
+                    Display Keyword
+                </option>
+                <option value="DISPLAY_TOPICS_PERFORMANCE_REPORT">
+                    Display Topic 
+                </option>
+                <option value="FINAL_URL_REPORT">
+                    Final URL
+                </option>
+                <option value="GENDER_PERFORMANCE_REPORT">
+                    Gender performance
+                </option>
+                <option value="GEO_PERFORMANCE_REPORT">
+                    Geo performance
+                </option>
+                <option value="KEYWORDLESS_CATEGORY_REPORT">
+                    Keywordless category
+                </option>
+                <option value="KEYWORDLESS_QUERY_REPORT">
+                    Keywordless query
+                </option>
+                <option value="KEYWORDS_PERFORMANCE_REPORT">
+                    Keywords performance
+                </option>
+                <option value="LABEL_REPORT">
+                    Label
+                </option>
+                <option value="PAID_ORGANIC_QUERY_REPORT">
+                    Paid organic query
+                </option>
+                <option value="PARENTAL_STATUS_PERFORMANCE_REPORT">
+                    parental status
+                </option>
+                <option value="PLACEMENT_PERFORMANCE_REPORT">
+                    Placement performance
+                </option>
+                <option value="PRODUCT_PARTITION_REPORT">
+                    Product partition
+                </option>
+                <option value="SEARCH_QUERY_PERFORMANCE_REPORT">
+                    Search query
+                </option>
+                <option value="SHARED_SET_CRITERIA_REPORT">
+                    Shared set criteria
+                </option>
+                <option value="SHARED_SET_REPORT">
+                    Shared set
+                </option>
+                <option value="SHOPPING_PERFORMANCE_REPORT">
+                    Shopping performance
+                </option>
+                <option value="TOP_CONTENT_PERFORMANCE_REPORT">
+                    Top content
+                </option>
+                <option value="URL_PERFORMANCE_REPORT">
+                    URL performance
+                </option>
+                <option value="USER_AD_DISTANCE_REPORT">
+                    User Ad distance
+                </option>
+                <option value="VIDEO_PERFORMANCE_REPORT">
+                    Video performance
+                </option>
+            </select>
+            
+            <legend class="testouette"><span class="number">4</span>Select a report</legend>
+            
+            <label class="hideElement" style="display:none" for="job">
+                <a href="https://developers.google.com/adwords/api/docs/appendix/reports#report-types" target="_blank">Metrics and dimensions</a>
+            </label>
+            
+            <select  style="width:100%; display:none" multiple=""  id="subcategory" name="subcategory" ></select>
+            <div class="block" id="output"></div>
+
+        </fieldset>
+
+            <button id="Submit-button"class="ladda-button" data-color="purple" data-style="zoom-in" type="submit" value="Submit">Submit</button>
+    </form>
+    
+    <!-- Load the select box library -->
+    <?!= include('js_select_box'); ?>
+    <!-- Load the dropdown menus -->
+    <?!= include('js_dropdowns'); ?>    
+
+    <!-- Function checking the selected metrics compatibility -->
+    <?!= include('js_check_metrics'); ?>
+
+    <!-- Loading the daterange picker libraries -->
+    <?!= include('js_datePicker'); ?>
+    <!-- datePicker_events -->
+    <?!= include('js_datePicker_events'); ?>
+    <!-- Toggle the date ranges -->
+    <?!= include('js_toggle_DateRanges'); ?>
+    
+    <!-- Load the Spinner button library -->
+    <?!= include('js_spinner'); ?>
+    
+    <!-- The library to validate the form entries -->
+    <?!= include('js_jquery_validate'); ?>
+
+</body>
+</html>

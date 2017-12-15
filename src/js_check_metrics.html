@@ -1,0 +1,123 @@
+<script>
+/**
+ * [Returns from the server a Json containing the incompatible metric list
+ * this is passed as an argument to the callback function that filters the results]
+ */
+function checkMetrics() {
+  google.script.run.withSuccessHandler(compatibility_Check).getMetrics();
+}
+
+/**
+ * [Checks if the selected metrics are compatible]
+ * @param  {[Json]} badMetrics [A Json file containing the combinations of incompatible metrics]
+ */
+function compatibility_Check(badMetrics) {
+
+  var valuesArray = [];
+  var displayArray = [];
+
+  // Array of checked metrics in the incompatible list
+  var matchedMetrics = [];
+  //Declare the incompatible metrics Key-value pairs object
+  var keysObj = {};
+  //Declare array of current metrics incompatibilities
+  var wrongMetricsNow = {};
+  // Currently selected report type
+  var selectedReport = $('#category').val();
+  // Push the metrics and their display name in an object
+  var displayName = {};
+
+  var subcategory = document.getElementById("subcategory");
+  for (var i = 0; i < subcategory.length; i++) {
+    var selectValue = subcategory.options[i].value;
+    var selectName = subcategory.options[i].getAttribute("name");
+
+    if (subcategory.options[i].selected) {
+      displayName[selectValue] = selectName;
+      valuesArray.push(selectValue);
+    }
+  }
+
+  //Create a list from the incompatibility list in the Json file
+  for (i in badMetrics) {
+    var keys = Object.keys(badMetrics[i])[0];
+
+    if (keys == selectedReport) {
+
+      var reportKeys = badMetrics[i][keys];
+      var badMetricsArray = Object.keys(reportKeys);
+
+      // Find matching metrics in the checked metrics array
+      for (var i = 0; i < badMetricsArray.length; i++) {
+        if (valuesArray.indexOf(badMetricsArray[i]) !== -1) {
+          matchedMetrics.push(badMetricsArray[i]);
+        }
+      }
+
+      // Build the incompatible metrics Key-value pairs object
+      for (i = 0; i < matchedMetrics.length; i++) {
+        keysObj[matchedMetrics[i]] = reportKeys[matchedMetrics[i]];
+        var x = keysObj[matchedMetrics[i]];
+        for (z = 0; z < x.length; z++) {
+          if (matchedMetrics.indexOf(x[z]) > -1) {
+            if (wrongMetricsNow[matchedMetrics[i]]) {
+              var tempObj = {};
+              wrongMetricsNow[matchedMetrics[i]].push(x[z]);
+            } else {
+              wrongMetricsNow[matchedMetrics[i]] = [];
+              wrongMetricsNow[matchedMetrics[i]].push(x[z]);
+            }
+          }
+        }
+      }
+
+      // Convert the incompatible metrics to their display name
+      var wrongKeys = Object.keys(wrongMetricsNow);
+      var incompatArray = {};
+
+      for (var m in displayName) {
+        if (wrongKeys.indexOf(m) > -1) {
+          var actualDisplay = displayName[m];
+          var incompatibleList = wrongMetricsNow[m];
+          incompatArray[actualDisplay] = incompatibleList;
+        }
+      }
+
+      // Match the current incompatible values with display names
+      function replaceElement(element) {
+        for (var z in displayName) {
+          if (element.indexOf(z) > -1) {
+            var index = element.indexOf(z);
+            element[index] = displayName[z];
+          }
+        }
+      }
+
+      for (var v in incompatArray) {
+        replaceElement(incompatArray[v]);
+      }
+
+      // Metrics choice error message
+      $('#output').empty();
+      for (var m in incompatArray) {
+        console.log(m + " is incompatible with: " + incompatArray[m]);
+        var div = document.getElementById('output');
+        div.innerHTML = '<span class=error >' + m + " is incompatible with: " + incompatArray[m] + '<\/span>';
+      }
+
+      // Apply red border around incompatible metrics
+      $(".search-choice").each(function () {
+        var spanChoice = $(this).text();
+        console.log("search choice lentght is " + $(".search-choice").length);
+        console.log("spanChoice is " + spanChoice);
+        $(this).css("border", "1px solid #aaa");
+        for (var x in incompatArray) {
+          if (spanChoice == x) $(this).css("border", "1.9px solid red");
+        }
+      });
+
+      break;
+    }
+  }
+};
+</script>

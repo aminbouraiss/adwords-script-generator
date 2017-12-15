@@ -1,0 +1,156 @@
+    <script>
+      /*Prevent forms from submitting.*/
+      function preventFormSubmit() {
+        var forms = document.querySelectorAll('form');
+        for (var i = 0; i < forms.length; i++) {
+          forms[i].addEventListener('submit', function(event) {
+            event.preventDefault();
+          }
+                                   );
+        }
+      }
+      window.addEventListener('load', preventFormSubmit);
+
+      /*Send request to server on form submit*/
+      function handleFormSubmit(formObject) {
+        // custom form object //
+        var myForm = document.myForm
+        var customForm = {
+        }
+        //push the selected metric values to the server//
+        customForm.checkboxes = []
+        var numberOfControls = myForm.length;
+        //get checkboxes //            
+        var e = $("#subcategory").val()
+        customForm.checkboxes.push(e)
+        //get text inputs //
+        for (var index = 0; index < numberOfControls; index++) {
+          var element = myForm[index];
+          if (element.type == "text") {
+            var elementName = element.name
+            customForm[elementName] = element.value
+          }
+        }
+        //get selected awql filter //
+        var accountFilterValue = $('#extraFilter').val()
+        console.log("filter value is" + accountFilterValue)
+        if ( accountFilterValue != "Enter your keywords") {
+        var subaccountOption = $('#filter-Results').val();
+        customForm["ChildAccountAWQL"] = subaccountOption
+        customForm["ChildAccountValue"] = accountFilterValue
+        }
+
+        scriptText(customForm);
+      }
+
+    function scriptText(customForm) {
+
+        //Define the script variables//
+        var AccountId = customForm["AccountId"]
+        var sheetUrl = customForm["sheetUrl"]
+        var csvEmail = $("#csvEmail").val()
+        var csvName = $("#csvName").val()
+        var ChildAccountValue = customForm["ChildAccountValue"]
+        var ChildAccountAWQL= customForm["ChildAccountAWQL"]
+        var report = $("#category").val()
+        var checkboxes = customForm["checkboxes"]
+
+        //Define the date variable//
+        var checkedRadio = $( "input[name=dateRadio]:checked" ).val()
+        debugger;
+        if (checkedRadio == "DateRanges"){
+          var date = $('#dateRange').val()
+        } else {
+          var date = $('#date').val()
+        }
+
+        //format the Account filter to insert it in the Adwords script//
+        if (ChildAccountValue != null){
+            var childRegex = /(.+)/g
+            var replaceString = "\n\.withCondition(\"AccountDescriptiveName " + ChildAccountAWQL+ " \'$1\'\")"
+            var replaceChild = ChildAccountValue.replace(childRegex,replaceString)
+          } else {
+              replaceChild = ChildAccountValue
+            }
+
+        //format the date to insert it in the Adwords script//
+        var dateRegex = /(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})/g
+        var customDateRegex = /(\d{4})-(\d{2})-(\d{2}) to Yesterday/g
+          
+          if (dateRegex.test(date)){
+            var dateReplace = date.replace(/(\d{4})-(\d{2})-(\d{2}) to (\d{4})-(\d{2})-(\d{2})/g,"$1$2$3,$4$5$6");
+          } else if ($('#dateRange').val() == 'CUSTOM_TO_DATE') {
+            var dateReplace = $('#toDate').val().replace(customDateRegex,"$1$2$3 to Yesterday")
+          } else { 
+            var dateReplace = date
+          }
+
+        //format the selected metrics to insert it in the Adwords script//
+        // var checkboxes=[["AccountDescriptiveName", "Impressions", "Clicks", "Cost", "AccountTimeZoneId"]]
+          for (test in checkboxes[0]) { checkboxes[0][test] = '"'+checkboxes[0][test]+'"'; console.log(checkboxes[0])}
+        var formatedMetrics = (checkboxes[0].join(","))
+
+
+        // Object containing the values to populate the placeholders in the serialized Adwords script
+        var replaceData = {
+            '%SPREADSHEET_URL%': sheetUrl,
+            '%EMAIL%': csvEmail,
+            '%FILE_NAME%': csvName,
+            '%DATESTRING%': dateReplace,
+            '%ChildAccountValue%': replaceChild,
+            '%CHECKBOXES%' : formatedMetrics,
+            '%ACCOUNT%' : AccountId,
+            '%REPORT%' : report,
+            '%PLACEHOLDER_SIGN%': '%s'
+          };
+
+        // the serialized Adwords script
+        var scriptCode = 'var SPREADSHEET_URL = \"%SPREADSHEET_URL%\";\nvar sheet = SpreadsheetApp.openByUrl(SPREADSHEET_URL);\n\n// Specify your date range\nvar dateRange = \"%DATESTRING%\";\n\n//function to get the date of yesterday //\nfunction getYesterdaysDate() {\n    var date = new Date();\n    date.setDate(date.getDate()-1);\n    var currentMonth = date.getMonth()+1\n    var formatMonth = currentMonth < 10 ?  \'0\'+currentMonth : currentMonth ;\n    return [date.getFullYear()+\"\"+formatMonth+\"\"+date.getDate(),date.getFullYear()];\n}\n\nvar yesterday = getYesterdaysDate()[0]\nvar currentYear = getYesterdaysDate()[1]\nvar dateRegex = /(\\d{8}) to Yesterday/g\n\nif (dateRange == \"YEAR_TO_DATE\") {\n  var newDate = currentYear+\"01\"+\"01\"+\",\"+yesterday\n} else if (dateRegex.test(dateRange)){\n  var newDate = dateRange.replace(dateRegex,\"$1,\"+yesterday);\n}\nelse { var newDate = dateRange\n}\n\nLogger.log(newDate)\n\nfunction Clearsheet() {\nif (dateRegex.test(dateRange)) {\n   sheet.getActiveSheet().clear();\n}\n}\n\n// Define the Report type\nvar reportType = \"%REPORT%\";\n\n// Select your accounts\nvar mccAccount = MccApp.accounts()\n.withCondition(\"ManagerCustomerId IN [\'%ACCOUNT%\']\")%ChildAccountValue%\n.withCondition(\"Impressions > 0\")\n.forDateRange(newDate);\n\n// Select your metrics\nvar fields = [\n  \"Date\",%CHECKBOXES%  \n];\n\n\nvar awql = \"SELECT \" + fields.join(\", \") +\n  \" from \" + reportType +\n    \" during \" + newDate;\n\nvar accountIterator = mccAccount.get();  \n\n// Additional reporting API options        \nvar reportOptions = {\n  includeZeroImpressions: false,\n};\n\nLogger.log(awql);\nfunction main() {\n  \n    var append_Array = [];\n\n    Clearsheet()\n  \n  // Row headers.\n  var dataRange = sheet.getDataRange()\n  if(dataRange.isBlank()) {\n  append_Array.push(fields);\n  }\n  \n  while (accountIterator.hasNext()) {\n     var account = accountIterator.next();\n    Logger.log(\'Start reporting %PLACEHOLDER_SIGN%\', account.getCustomerId()); \n    // Switch to the account you want to process.\n    \n    MccApp.select(account);\n   \n    var report = AdWordsApp.report(awql,reportOptions);\n    var rows = report.rows();\n  // Go trough each row.\n  while (rows.hasNext()) {\n    var row = rows.next();\n    \n    var row_Array = [];\n    \n  for (var i = 0; i < fields.length; i++) {\n    var metric = row[fields[i]] ;\n  row_Array.push(metric);\n  }\n   \n      append_Array.push(row_Array);\n    }   \n\n  }\n\n  //get the last row in the current datarange //\n  var lastRow = dataRange.getLastRow()\n  var startRow = lastRow + 1\n  var columnLetter = (\"abcdefghijklmnopqrstuvwxyz\").split(\"\")\n if(dataRange.isBlank() == false) {\n  var startCell = \"A\" + startRow\n  } else {\n    var startCell = \"A1\"\n  }\n\nvar ArrayLastRow = append_Array.length + lastRow\n  var ArrayLastCol = append_Array[0].length\n  \n\n//function to convert integers to A1 notations\nfunction toColumnName(num) {\n  for (var ret = \'\', a = 1, b = 26; (num -= a) >= 0; a = b, b *= 26) {\n    ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;\n  }\n  return ret;\n}\n\n  var ArraycolLetter = toColumnName(ArrayLastCol)\n\n  if(dataRange.isBlank()) {\n\n  var arrayLastCell = ArraycolLetter + (ArrayLastRow -1) \n  } else {\n    var arrayLastCell = ArraycolLetter + (ArrayLastRow) \n  } \n  \n  //apply the values to the spreadsheet //\n  var newRange = sheet.getRange(startCell+\":\"+arrayLastCell)\n  newRange.setValues(append_Array)\n  \n //format dates //\n var cell = sheet.getActiveSheet().getRange(\"A:A\");\n cell.setNumberFormat(\'yyyy-mm-dd\');\n\n //Logs//\n\n Logger.log(append_Array[0])\n \n}\n\n\n/*AVAILABLE DATE RANGES\nTODAY | YESTERDAY | LAST_7_DAYS | THIS_WEEK_SUN_TODAY | THIS_WEEK_MON_TODAY | LAST_WEEK |\nLAST_14_DAYS | LAST_30_DAYS | LAST_BUSINESS_WEEK | LAST_WEEK_SUN_SAT | THIS_MONTH\n*/'
+
+        
+        var csv_Script = '// Specify your date range\nvar dateRange = \"%DATESTRING%\";\n\n//function to get the date of yesterday //\nfunction getYesterdaysDate() {\n    var date = new Date();\n    date.setDate(date.getDate()-1);\n    var currentMonth = date.getMonth()+1\n    var formatMonth = currentMonth < 10 ?  \'0\'+currentMonth : currentMonth ;\n    return [date.getFullYear()+\"\"+formatMonth+\"\"+date.getDate(),date.getFullYear()];\n}\n\nvar yesterday = getYesterdaysDate()[0]\nvar currentYear = getYesterdaysDate()[1]\nvar dateRegex = /(\\d{8}) to Yesterday/g\n\nif (dateRange == \"YEAR_TO_DATE\") {\n  var newDate = currentYear+\"01\"+\"01\"+\",\"+yesterday\n} else if (dateRegex.test(dateRange)){\n  var newDate = dateRange.replace(dateRegex,\"$1,\"+yesterday);\n}\nelse { var newDate = dateRange\n}\n\nLogger.log(newDate)\n\n// Define the Report type\nvar reportType = \"%REPORT%\";\n\n// Select your accounts\nvar mccAccount = MccApp.accounts()\n.withCondition(\"ManagerCustomerId IN [\'%ACCOUNT%\']\")%ChildAccountValue%\n.withCondition(\"Impressions > 0\")\n.forDateRange(newDate);\n\n// Select your metrics\nvar fields = [\n  \"Date\",%CHECKBOXES%  \n];\n\n\nvar awql = \"SELECT \" + fields.join(\", \") +\n  \" from \" + reportType +\n    \" during \" + newDate;\n\nvar accountIterator = mccAccount.get();  \n\n// Additional reporting API options        \nvar reportOptions = {\n  includeZeroImpressions: false,\n};\n\nLogger.log(awql);\nfunction main() {\n  \n  var append_Array = [];\n\n  // Add the headers\n  append_Array.push(fields);\n  \n  while (accountIterator.hasNext()) {\n    var account = accountIterator.next();\n    Logger.log(\'Start reporting %PLACEHOLDER_SIGN%\', account.getCustomerId()); \n    // Switch to the account you want to process.\n    MccApp.select(account);\n  var report = AdWordsApp.report(awql,reportOptions);\n  var rows = report.rows();\n    var report = AdWordsApp.report(awql,reportOptions);\n    var rows = report.rows();\n  // Go trough each row.\n    while (rows.hasNext()) {\n      var row = rows.next();\n    \n      var row_Array = [];\n    \n    for (var i = 0; i < fields.length; i++) {\n    var metric = row[fields[i]] ;\n  row_Array.push(metric);\n  }\n    \n      append_Array.push(row_Array);\n    }   \n    \n  }\n\n  var csv = [];\n  \n  for (var i = 0; i < append_Array.length; i++) {\n    \n  csv += append_Array[i]+ \'\\n\';\n  }\n  \n  MailApp.sendEmail(\n    \'%EMAIL%\',\n    \'Adwords report: %ACCOUNT%\',\n    \'Adwords script generated report for the Accound ID %ACCOUNT%\',\n    {attachments:[{fileName: \'%FILE_NAME%\', mimeType: \'text/csv\', content: csv}]}\n  );\n \n}\n\n\n/*AVAILABLE DATE RANGES\nTODAY | YESTERDAY | LAST_7_DAYS | THIS_WEEK_SUN_TODAY | THIS_WEEK_MON_TODAY | LAST_WEEK |\nLAST_14_DAYS | LAST_30_DAYS | LAST_BUSINESS_WEEK | LAST_WEEK_SUN_SAT | THIS_MONTH\n*/'
+
+
+        // custom function to replace the serialized Adwords script
+        function substitute(str, data) {
+          var output = str.replace(/%[^%]+%/g, function (match) {
+            if (match in data) {
+              return (data[match]);
+            } else {
+              return ('');
+            }
+          });
+          return (output);
+        }
+
+        if ($( "#gSheetRadio:checked" ).val()) {
+        var output = substitute(scriptCode, replaceData);
+        } else {
+          var output = substitute(csv_Script, replaceData);
+        }
+
+        var link = document.createElement('a');
+      link.style.display="none"
+      link.setAttribute("id","downloadLink")
+      link.download = 'Adwords-script.txt';
+      link.textContent = 'Download ready'
+      var blob = new Blob([output], {type: 'text/plain'});
+      link.href = window.URL.createObjectURL(blob);
+      var div = document.getElementById('output');
+      div.appendChild(link)
+      laddaLoad()
+      // Timed out function to show the link only 100ms after the ladda spinner stops//
+      setTimeout(function(){
+        link.style.display = "block"
+      }, 1300);      
+      // use link.click() for automatic download;
+
+              }
+
+      /*Function in case of error*/
+      function onFailure(error) {
+        var div = document.getElementById('output');
+        div.innerHTML = '<span class=error >' + error.message+'<\/span>';
+      }
+    
+    </script>

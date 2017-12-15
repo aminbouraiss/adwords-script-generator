@@ -1,0 +1,89 @@
+<script>
+
+//Toggle standart-custom date ranges
+
+//get today's date
+var currentDate = new Date
+ 
+//extract the year, the day and the month
+var currentYear = currentDate.getFullYear()
+var currentDay = currentDate.getDate()
+var currentMonth = currentDate.getMonth() + 1
+var formatMonth = currentMonth < 10 ?  '0'+currentMonth : currentMonth ;
+
+ 
+//concatenate the formated date
+var formatedDate = currentYear + "-01-01 to "+currentYear + '-' + formatMonth + '-' + currentDay
+
+$("#date").attr("value",formatedDate);
+
+//add the chosen plugin to the filter account select input
+$("#filter-Results").chosen();
+$("#filter-Results_chosen").attr("style", "width:100%");
+
+//add the chosen plugin to the report type selector//
+$("#category").chosen();
+$("#category_chosen").attr("style", "width:100%");
+
+//add the chosen plugin to metrics selector//
+$("#dateRange").chosen();
+$("#dateRange_chosen").attr("style", "width:100%");
+
+//Check the csvname on blur//
+
+$("#csvName").on("blur", function() {
+              var input = this.value;
+              var inputRegex = /\w+\.csv/g; 
+              if (!inputRegex.test(input) && input) {
+              var newValue = this.value + ".csv";
+              this.value = newValue
+              }
+
+
+            });
+
+//hide-unhide the selectors when clicking on the radio buttons//
+$("#csvRadio").on("click", function() {
+                $("#sheetDiv").hide();
+                $('#hideCsv').show();
+            });
+
+
+$("#gSheetRadio").on("click", function() {
+                $("#hideCsv").hide();
+                $('#sheetDiv').show();
+            });
+
+
+$("#StandartDate").on("click", function() {
+                $("#hideCustomDates").hide();
+                $('#hideDates').show();
+            });
+
+$("#CustomRangeRadio").on("click", function() {                
+                $('#hideDates').hide();
+                $("#hideCustomDates").show();
+            });
+
+
+$("#filter-Results").on("change", function() {
+                $('#extraFilter').show('slow');
+$("#Account-Fieldset").attr("style", "margin-bottom:30px");
+
+            });
+
+//Show the custom-to-date option//
+$("#dateRange").on("change", function() {
+                $("#hideCustomToDates").hide();
+                var selectedVal = $('#dateRange').val();
+                if (selectedVal == 'CUSTOM_TO_DATE') {
+                $('#toDate').data('dateRangePicker').clear()
+                $('#toDate').attr("placeholder","Enter a start date")
+                $("#hideDates").attr("margin-bottom","20px")
+                $("#hideCustomToDates").show('slow');
+                }
+                
+            });
+
+
+</script>

@@ -1,0 +1,14 @@
+<script type="text/javascript">
+      var datefield=document.createElement("input")
+      datefield.setAttribute("type", "date")
+    </script> 
+    <script>
+      if (datefield.type!="date"){
+        //if browser doesn't support input type="date", initialize date picker widget:
+        jQuery(function($){
+          //on document.ready
+          $('#name').datepicker();
+        }
+              )
+      }
+    </script>

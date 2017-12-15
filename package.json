@@ -1,0 +1,49 @@
+{
+  "name": "node-google-apps-script",
+  "version": "1.2.0",
+  "description": "The easiest way to develop Google Apps Script projects",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/danthareja/node-google-apps-script.git"
+  },
+  "bin": {
+    "gapps": "./bin/gapps"
+  },
+  "main": "index",
+  "preferGlobal": true,
+  "keywords": [
+    "google",
+    "apps",
+    "script",
+    "drive",
+    "github",
+    "source",
+    "version",
+    "control",
+    "import",
+    "export",
+    "download",
+    "upload",
+    "push",
+    "clone"
+  ],
+  "author": "Dan Thareja (danthareja@gmail.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/danthareja/node-google-apps-script/issues"
+  },
+  "homepage": "https://github.com/danthareja/node-google-apps-script",
+  "dependencies": {
+    "bluebird": "^2.9.30",
+    "colors": "^1.0.3",
+    "commander": "^2.7.1",
+    "googleapis": "^2.0.5",
+    "lodash": "^3.9.3",
+    "mkdirp": "^0.5.1",
+    "node-dir": "^0.1.6",
+    "request": "^2.54.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
