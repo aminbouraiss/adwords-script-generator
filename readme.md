@@ -1,20 +1,19 @@
 # Adwords script generator
-___
+
 # Overview
-___
+
 Adwords script generator is a Google Script webapp to generate Adwords scripts for reporting in a couple clicks. You can take a look at the full list of available report types [here](https://developers.google.com/adwords/api/docs/appendix/reports)
 
 ## Live Demo
-___
+
 Click [here](https://script.google.com/macros/s/AKfycbwuEjqPwOiCJtsveC7DDUhvokIUCmLJOfIxwJSxWRFOlL5cTxM/exec) to see the Adwords script generator in action.
 
 ## Development
-___
+
 ### With the Google Apps Script editor
 To create your own version of the Adwords script generator, click [here](https://script.google.com/d/1vd_nMcJeckNzLFPAw9_49neu3owLb9CA2h3lStcqB1R9O-yYKzvE4Pon/edit?usp=sharing) and choose **File > Make a copy...** in the Google Apps Script editor.
 
 ### Locally with Gapps
-___
 
 Using [gapps](https://github.com/danthareja/node-google-apps-script), you can develop your Apps Script locally and push files to the Apps Script servers. This allows you to use any editor of your choice, version control, and other modern webdev patterns in to Apps Script development.
 
