@@ -2,7 +2,7 @@
 
 # Overview
 
-Adwords script generator is a Google Script webapp to generate Adwords scripts for reporting in a couple clicks. You can take a look at the full list of available report types [here](https://developers.google.com/adwords/api/docs/appendix/reports)
+Adwords script generator is a Google Script webapp to generate Adwords scripts for reporting in a couple clicks. You can take a look at the full list of available report types [here](https://developers.google.com/adwords/api/docs/appendix/reports).
 
 ## Live Demo
 
