@@ -1,2 +1,2 @@
-src/*.html
-*.html
+src/*.html linguist-vendored
+*.html linguist-vendored
